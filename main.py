@@ -60,6 +60,7 @@ train_transform = WM811KTransform(size=args.input_size, mode='basic')
 train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
 test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
 
+print('Dataset WM811K load start.')
 # x_train = train_set.train_data.numpy()          # 形状为 (num_samples, 28, 28)
 # x_test = test_set.test_data.numpy()
 # y_train = train_set.train_labels.numpy()
