@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 
 def generateDDR(D):
     randomHV=np.ones(D)
-    permuIdx=np.random.permutation(D)
-    randomHV[permuIdx[:int(D/2)]] = -1
+    permuIdx=np.random.permutation(D)           # 生成了一个长度为 D 的随机排列索引数组 permuIdx
+    randomHV[permuIdx[:int(D/2)]] = -1          # 将 randomHV 数组中一半的元素（对应随机索引 permuIdx 的前半部分）修改为 -1
     # for i in range(int(len(permuIdx)/2)):
     #     randomHV[permuIdx[i]]=-1
-    randomHV=randomHV.astype(int)
+    randomHV=randomHV.astype(int)               # 将 randomHV 数组的类型转换为 int，确保所有元素都是整数型的 1 或 -1
     return randomHV
 
 def binarizeMajorityRule(HV):
@@ -36,7 +36,7 @@ def inference(y_test, test_HVs, associativeMemory, num_class):
         Y = test_HVs[i]
         inds = []
         for j in range(num_class):
-            item  = np.dot(Y, associativeMemory[j])
+            item  = np.dot(Y, associativeMemory[j])     # 通过点积计算当前测试样本与类别 j 的类超向量的相似度。
             hamm_list.append(item)
         pred_class = np.argmax(hamm_list)
         all_list[int(y_test[i])] = all_list[int(y_test[i])] + 1

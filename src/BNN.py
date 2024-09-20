@@ -42,7 +42,7 @@ class BHDC(torch.nn.Module):
         self.dropout = torch.nn.Dropout(p = dropout_prob)
 
     def forward(self, x):
-        x = x.view(-1, self.inshape)
+        x = x.view(-1, self.inshape)        # 将输入数据展平为一维向量，大小为 (batch_size, inshape
         x = self.dropout(x)
         x = self.binary_weight_l2(x)
         return x
