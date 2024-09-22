@@ -28,18 +28,18 @@ import torchvision.transforms as transforms
 import numpy as np
 
 # Use standard FashionMNIST dataset
-# train_set = torchvision.datasets.FashionMNIST(
-#     root = args.data_dir,
-#     train = True,
-#     download = True	# please turn it off once downloaded
-# )
-#
-# # Use standard FashionMNIST dataset
-# test_set = torchvision.datasets.FashionMNIST(
-#     root = args.data_dir,
-#     train = False,
-#     download = True	# please turn it off once downloaded
-# )
+train_set = torchvision.datasets.FashionMNIST(
+    root = args.data_dir,
+    train = True,
+    download = True	# please turn it off once downloaded
+)
+
+# Use standard FashionMNIST dataset
+test_set = torchvision.datasets.FashionMNIST(
+    root = args.data_dir,
+    train = False,
+    download = True	# please turn it off once downloaded
+)
 
 # Use standard MNIST dataset
 # train_set = torchvision.datasets.MNIST(
@@ -56,20 +56,22 @@ import numpy as np
 # )
 
 # Use WM811K dataset
-train_transform = WM811KTransform(size=args.input_size, mode='basic')
-train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
-test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
+# train_transform = WM811KTransform(size=args.input_size, mode='basic')
+# train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
+# test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
 
 print('Dataset WM811K load start.')
-# x_train = train_set.train_data.numpy()          # 形状为 (num_samples, 28, 28)
-# x_test = test_set.test_data.numpy()
-# y_train = train_set.train_labels.numpy()
-# y_test = test_set.test_labels.numpy()
-x_train = np.array([x for x, _ in train_set])
-y_train = np.array([y for _, y in train_set])
-x_test = np.array([x for x, _ in test_set])
-y_test = np.array([y for _, y in test_set])
+x_train = train_set.data.numpy()          # 形状为 (num_samples, 28, 28)
+x_test = test_set.data.numpy()
+y_train = train_set.targets.numpy()
+y_test = test_set.targets.numpy()
 
+# x_train = np.array([x for x, _ in train_set])
+# y_train = np.array([y for _, y in train_set])
+# x_test = np.array([x for x, _ in test_set])
+# y_test = np.array([y for _, y in test_set])
+
+print('Dataset WM811K loading ...')
 
 def reshapeX(x):
     x_reshape=[]
