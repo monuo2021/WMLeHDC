@@ -17,7 +17,7 @@ args = parser.parse_args()
 # This is the dataset configuration:
 num_feature = 784       # 对应每个展平后的图像有 784 个像素值
 num_value = 256         # 表示像素值可以有 256 种取值（0-255）
-num_class = 9          # Fashion-MNIST 有 10 个类别
+num_class = 10          # Fashion-MNIST 有 10 个类别
 dimension = 10000       # this can be changed for the hypervector dimension
 
 
@@ -28,18 +28,18 @@ import torchvision.transforms as transforms
 import numpy as np
 
 # Use standard FashionMNIST dataset
-# train_set = torchvision.datasets.FashionMNIST(
-#     root = args.data_dir,
-#     train = True,
-#     download = True	# please turn it off once downloaded
-# )
-#
-# # Use standard FashionMNIST dataset
-# test_set = torchvision.datasets.FashionMNIST(
-#     root = args.data_dir,
-#     train = False,
-#     download = True	# please turn it off once downloaded
-# )
+train_set = torchvision.datasets.FashionMNIST(
+    root = args.data_dir,
+    train = True,
+    download = True	# please turn it off once downloaded
+)
+
+# Use standard FashionMNIST dataset
+test_set = torchvision.datasets.FashionMNIST(
+    root = args.data_dir,
+    train = False,
+    download = True	# please turn it off once downloaded
+)
 
 # Use standard MNIST dataset
 # train_set = torchvision.datasets.MNIST(
@@ -56,36 +56,39 @@ import numpy as np
 # )
 
 # Use WM811K dataset
-train_transform = WM811KTransform(size=args.input_size, mode='basic')
-train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
-test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
+# train_transform = WM811KTransform(size=args.input_size, mode='basic')
+# train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
+# test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
 
 print('Dataset WM811K load start.')
-# x_train = train_set.data.numpy()          # 形状为 (num_samples, 28, 28)
-# x_test = test_set.data.numpy()
-# y_train = train_set.targets.numpy()
-# y_test = test_set.targets.numpy()
+x_train = train_set.data.numpy()          # 形状为 (num_samples, 28, 28)
+x_test = test_set.data.numpy()
+y_train = train_set.targets.numpy()
+y_test = test_set.targets.numpy()
 
-x_train = np.array([x for x, _ in train_set])
-y_train = np.array([y for _, y in train_set])
-x_test = np.array([x for x, _ in test_set])
-y_test = np.array([y for _, y in test_set])
+# x_train = np.array([x for x, _ in train_set])
+# y_train = np.array([y for _, y in train_set])
+# x_test = np.array([x for x, _ in test_set])
+# y_test = np.array([y for _, y in test_set])
 
 print('Dataset WM811K loading ...')
 
+# def reshapeX(x):
+#     x_reshape=[]
+#     num=x.shape[0]
+#     for i in range(num):
+#         x_reshape.append(x[i].flatten())
+#     return x_reshape
 def reshapeX(x):
-    x_reshape=[]
-    num=x.shape[0]
-    for i in range(num):
-        x_reshape.append(x[i].flatten())
-    return x_reshape
+    # 改进 reshapeX 函数，利用 NumPy 的 reshape 方法
+    return x.reshape(x.shape[0], -1)
 
 x_train=reshapeX(x_train)       # (num_samples, 784)
 x_test=reshapeX(x_test)
-x_train = np.array(x_train,dtype=int)   # (num_samples, 784)
-y_train = np.array(y_train,dtype=int)
-x_test = np.array(x_test,dtype=int)
-y_test = np.array(y_test,dtype=int)
+# x_train = np.array(x_train,dtype=int)   # (num_samples, 784)
+# y_train = np.array(y_train,dtype=int)
+# x_test = np.array(x_test,dtype=int)
+# y_test = np.array(y_test,dtype=int)
 # print('Dataset FashionMNIST loaded.')
 # print('Dataset MNIST loaded.')
 # print('Dataset CIFAR10 loaded.')
@@ -120,16 +123,24 @@ while k < num_value:
 
 print('HV generation completed.')
 
-print('start prepare HVs for training samples....')
-train_HVs = []                                                              # encode the training samples
-for i in range(len(x_train)):
-    train_HVs.append(encoding(x_train[i], dimension, featureMemory, valueMemory))
+# print('start prepare HVs for training samples....')
+# train_HVs = []                                                              # encode the training samples
+# for i in range(len(x_train)):
+#     train_HVs.append(encoding(x_train[i], dimension, featureMemory, valueMemory))
+# print('HVs for training samples are completed.')
+#
+# print('start prepare HVs for testing samples....')
+# test_HVs = []                                                               # encode the testing samples
+# for i in range(len(x_test)):
+#     test_HVs.append(encoding(x_test[i], dimension, featureMemory, valueMemory))
+# print('HVs for testing samples are completed.')
+
+print('start prepare HVs for training samples....')                                                     # encode the training samples
+train_HVs = batch_encoding(x_train, dimension, featureMemory, valueMemory)
 print('HVs for training samples are completed.')
 
 print('start prepare HVs for testing samples....')
-test_HVs = []                                                               # encode the testing samples
-for i in range(len(x_test)):
-    test_HVs.append(encoding(x_test[i], dimension, featureMemory, valueMemory))
+test_HVs = batch_encoding(x_test, dimension, featureMemory, valueMemory)
 print('HVs for testing samples are completed.')
 
 train_HVs = np.array(train_HVs)
