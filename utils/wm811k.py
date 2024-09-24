@@ -26,11 +26,13 @@ class WM811K(Dataset):
     idx2label = [k for k in label2idx.keys()]
     num_classes = len(idx2label) - 1
 
-    def __init__(self, root, transform=None, **kwargs):
+    def __init__(self, root, transform=None, cache_dir='./cache', use_cache=True, **kwargs):
         super(WM811K, self).__init__()
 
         self.root = root
         self.transform = transform
+        self.cache_dir = cache_dir
+        self.use_cache = use_cache
 
         images  = sorted(glob.glob(os.path.join(root, '**/*.png'), recursive=True))
         labels  = [pathlib.PurePath(image).parent.name for image in images]
@@ -39,9 +41,21 @@ class WM811K(Dataset):
 
         self.samples = samples
 
+        # 创建缓存目录
+        if self.use_cache and not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+            self.cache_preprocessed_images()
+
     def __getitem__(self, idx):
         path, y = self.samples[idx]
-        x = self.load_image_cv2(path)
+        # x = self.load_image_cv2(path)
+
+        if self.use_cache:
+            # 从缓存加载图像
+            x = self.load_cached_image(idx)
+        else:
+            # 每次调用时加载图像
+            x = self.load_image_cv2(path)
 
         if self.transform is not None:
             x = self.transform(x)
@@ -56,3 +70,16 @@ class WM811K(Dataset):
         """Load image with cv2. Use with `albumentations`."""
         img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
         return np.expand_dims(img, axis=2)
+
+    def cache_preprocessed_images(self):
+        """缓存预处理后的图像到磁盘"""
+        print("Caching preprocessed images...")
+        for idx, (path, _) in enumerate(self.samples):
+            img_path = os.path.join(self.cache_dir, f'{idx}.npy')
+            if not os.path.exists(img_path):
+                img = self.load_image_cv2(path)
+                np.save(img_path, img)
+
+    def load_cached_image(self, idx):
+        """从缓存加载图像"""
+        return np.load(os.path.join(self.cache_dir, f'{idx}.npy'))
