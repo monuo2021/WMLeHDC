@@ -16,8 +16,8 @@ args = parser.parse_args()
 
 #################################################
 # This is the dataset configuration:
-num_feature = 784       # 对应每个展平后的图像有 784 个像素值
-num_value = 256         # 表示像素值可以有 256 种取值（0-255）
+num_feature = args.input_size * args.input_size       # 对应每个展平后的图像有 784 个像素值
+num_value = 3         # 表示像素值可以有 256 种取值（0-255）
 num_class = 9          # Fashion-MNIST 有 10 个类别
 dimension = 10000       # this can be changed for the hypervector dimension
 
@@ -59,9 +59,7 @@ import numpy as np
 # Use WM811K dataset
 start_time = time.time()
 train_transform = WM811KTransform(size=args.input_size, mode='basic')
-# train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform)
-# test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform)
-train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform, use_cache=True)
+train_set = WM811K('./data/wm811k/labeled/train/', transform=train_transform, filter_type='gaussian', kernel_size=5, use_cache=True)
 test_set = WM811K('./data/wm811k/labeled/test/', transform=train_transform, use_cache=True)
 print('Dataset WM811K load start.')
 # x_train = train_set.data.numpy()          # 形状为 (num_samples, 28, 28)
@@ -73,8 +71,8 @@ print('Dataset WM811K load start.')
 # y_train = np.array([y for _, y in train_set], dtype=int)
 # x_test = np.array([x for x, _ in test_set], dtype=int)
 # y_test = np.array([y for _, y in test_set], dtype=int)
-train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, num_workers=4)
-test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=False, num_workers=4)
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=256, shuffle=True, num_workers=4)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size=256, shuffle=False, num_workers=4)
 
 x_train = np.array([x for x, _ in train_loader.dataset], dtype=int)
 y_train = np.array([y for _, y in train_loader.dataset], dtype=int)
@@ -192,15 +190,15 @@ torch.seed()
 x_train = torch.from_numpy(train_HVs.reshape((x_train.shape[0],-1))).type(torch.float).to(device)   # # (num_samples, 10000)
 y_train = torch.tensor(y_train, dtype=torch.int64).flatten().to(device)
 train_set = torch.utils.data.TensorDataset(x_train, y_train)
-trainloader = torch.utils.data.DataLoader(train_set, batch_size=50, shuffle=True)       # The batch_size can be fine-tuned.
+trainloader = torch.utils.data.DataLoader(train_set, batch_size=256, shuffle=True)       # The batch_size can be fine-tuned.
 x_test = torch.from_numpy(test_HVs.reshape((len(x_test),-1))).type(torch.float).to(device)
 y_test = torch.tensor(y_test, dtype=torch.int64).flatten().to(device)
 test_set = torch.utils.data.TensorDataset(x_test, y_test)
 
 D = dimension
 num_class = num_class
-dropout_rate = 0.5
-weight_decay = 5e-2
+dropout_rate = 0.3
+weight_decay = 3e-2
 learning_rate = 1e-2
 
 model = BHDC(inshape=D, outshape=num_class, dropout_prob=dropout_rate).to(device)

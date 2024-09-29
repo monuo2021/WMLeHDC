@@ -22,13 +22,13 @@ def binarizeMajorityRule(HV):
     # 通过 np.sign 更高效地进行二值化处理
     return np.sign(HV)
 
-# def encoding(sampleX,D,pixelMemory,valueMemory):
-#     sampleHV=np.zeros(D, dtype='float32')
-#     num_pixels=len(sampleX)
-#     for i in range(num_pixels):
-#         sampleHV += pixelMemory[i]*valueMemory[sampleX[i]]
-#     # return sampleHV                             # Non-binary
-#     return binarizeMajorityRule(sampleHV)     # Binary
+def encoding(sampleX,D,pixelMemory,valueMemory):
+    sampleHV=np.zeros(D, dtype='float32')
+    num_pixels=len(sampleX)
+    for i in range(num_pixels):
+        sampleHV += pixelMemory[i]*valueMemory[sampleX[i]]
+    # return sampleHV                             # Non-binary
+    return binarizeMajorityRule(sampleHV)     # Binary
 
 def encoding_vectorized(sampleX, D, pixelMemory, valueMemory):
     # 使用 NumPy 向量化操作代替逐元素循环
@@ -61,7 +61,12 @@ def inference(y_test, test_HVs, associativeMemory, num_class):
 
     sum_corr = 0
     sum_all = len(y_test)
+
+    # 输出每一类的准确率
     for i in range(num_class):
+        class_accuracy = correct_list[i] / all_list[i] if all_list[i] > 0 else 0
+        print(f'Class {i} accuracy: {class_accuracy:.4f}')
         sum_corr += correct_list[i]
+
     print('Avg: %.4f'%(sum_corr/sum_all))
     return sum_corr/sum_all

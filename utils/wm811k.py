@@ -26,13 +26,15 @@ class WM811K(Dataset):
     idx2label = [k for k in label2idx.keys()]
     num_classes = len(idx2label) - 1
 
-    def __init__(self, root, transform=None, cache_dir='./cache', use_cache=True, **kwargs):
+    def __init__(self, root, transform=None, filter_type='gaussian', kernel_size=5, cache_dir='./cache', use_cache=True, **kwargs):
         super(WM811K, self).__init__()
 
         self.root = root
         self.transform = transform
         self.cache_dir = cache_dir
         self.use_cache = use_cache
+        self.filter_type = filter_type
+        self.kernel_size = kernel_size
 
         images  = sorted(glob.glob(os.path.join(root, '**/*.png'), recursive=True))
         labels  = [pathlib.PurePath(image).parent.name for image in images]
@@ -56,6 +58,9 @@ class WM811K(Dataset):
         else:
             # 每次调用时加载图像
             x = self.load_image_cv2(path)
+
+        # 应用滤波处理
+        x = self.apply_filter(x)  # 选择合适的滤波类型和大小
 
         if self.transform is not None:
             x = self.transform(x)
@@ -83,3 +88,11 @@ class WM811K(Dataset):
     def load_cached_image(self, idx):
         """从缓存加载图像"""
         return np.load(os.path.join(self.cache_dir, f'{idx}.npy'))
+
+    def apply_filter(self, image):
+        if self.filter_type == 'gaussian':
+            return cv2.GaussianBlur(image, (self.kernel_size, self.kernel_size), 0)
+        elif self.filter_type == 'median':
+            return cv2.medianBlur(image, self.kernel_size)
+        else:
+            raise ValueError("Unsupported filter type. Choose 'gaussian' or 'median'.")
